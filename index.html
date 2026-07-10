@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>CGC ESPORT — Panel de Estadísticas</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap');
+
+:root{
+  --bg-void:#0A0E0C;
+  --bg-panel:#111815;
+  --bg-panel-alt:#161F1B;
+  --line:#233028;
+  --fire:#FF5A1F;
+  --fire-dim:#7A3617;
+  --toxic:#B4FF39;
+  --toxic-dim:#4E5C22;
+  --ice:#3FD9C7;
+  --danger:#FF3B3B;
+  --text:#EAF0EA;
+  --text-dim:#7E9186;
+  --text-faint:#4B5951;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body{
+  background:
+    repeating-linear-gradient(0deg, rgba(180,255,57,0.025) 0px, rgba(180,255,57,0.025) 1px, transparent 1px, transparent 28px),
+    repeating-linear-gradient(90deg, rgba(180,255,57,0.025) 0px, rgba(180,255,57,0.025) 1px, transparent 1px, transparent 28px),
+    var(--bg-void);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  padding:28px 20px 60px;
+}
+
+.wrap{max-width:1040px;margin:0 auto;}
+
+/* HEADER */
+.hud-top{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  border-bottom:2px solid var(--fire);
+  padding-bottom:14px;margin-bottom:22px;
+  flex-wrap:wrap;gap:12px;
+}
+.brand-eyebrow{
+  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;
+  color:var(--toxic);text-transform:uppercase;margin-bottom:4px;
+}
+.brand-name{
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:34px;
+  letter-spacing:1px;color:var(--text);
+  display:flex;align-items:center;gap:10px;
+}
+.brand-name input{
+  background:transparent;border:none;color:var(--text);
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:34px;
+  letter-spacing:1px;outline:none;border-bottom:1px dashed transparent;
+  max-width:420px;
+}
+.brand-name input:hover, .brand-name input:focus{border-bottom:1px dashed var(--fire-dim);}
+.zone-tag{
+  font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dim);
+  text-align:right;
+}
+.zone-tag b{color:var(--fire);font-weight:700;}
+.tournament-sub{
+  background:transparent;border:none;outline:none;
+  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;
+  color:var(--text-dim);margin-top:2px;padding:0;width:100%;max-width:260px;
+  border-bottom:1px dashed transparent;
+}
+.tournament-sub:hover, .tournament-sub:focus{border-bottom:1px dashed var(--fire-dim);}
+
+/* TABS */
+.tabs{display:flex;gap:2px;margin-bottom:22px;}
+.tab{
+  font-family:'Rajdhani',sans-serif;font-weight:600;font-size:15px;
+  letter-spacing:1.5px;text-transform:uppercase;
+  padding:11px 20px;background:var(--bg-panel);
+  color:var(--text-dim);cursor:pointer;border:1px solid var(--line);
+  border-bottom:2px solid transparent;
+  transition:all .15s;
+}
+.tab:hover{color:var(--text);}
+.tab.active{
+  color:var(--fire);border-bottom:2px solid var(--fire);
+  background:var(--bg-panel-alt);
+}
+
+.panel{display:none;}
+.panel.active{display:block;animation:fadein .2s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* SECTION LABEL */
+.sec-label{
+  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;
+  color:var(--text-faint);text-transform:uppercase;margin:26px 0 10px;
+  display:flex;align-items:center;gap:8px;
+}
+.sec-label::after{content:"";flex:1;height:1px;background:var(--line);}
+
+/* FORM CARD */
+.form-card{
+  background:var(--bg-panel);border:1px solid var(--line);
+  padding:20px;position:relative;
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%);
+}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;}
+.field label{
+  display:block;font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:1.5px;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px;
+}
+.field input, .field select{
+  width:100%;background:var(--bg-void);border:1px solid var(--line);
+  color:var(--text);padding:9px 10px;font-family:'Inter',sans-serif;
+  font-size:14px;outline:none;
+}
+.field input:focus, .field select:focus{border-color:var(--fire);}
+.btn{
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;
+  letter-spacing:1.5px;text-transform:uppercase;
+  background:var(--fire);color:#0A0E0C;border:none;
+  padding:11px 22px;cursor:pointer;margin-top:16px;
+  clip-path:polygon(0 0,100% 0,100% 100%,10px 100%,0 calc(100% - 10px));
+  transition:filter .15s;
+}
+.btn:hover{filter:brightness(1.15);}
+.btn.ghost{
+  background:transparent;color:var(--text-dim);border:1px solid var(--line);
+  clip-path:none;font-size:12px;padding:6px 12px;margin-top:0;
+}
+.btn.ghost:hover{color:var(--danger);border-color:var(--danger);}
+
+.role-check-group{display:flex;flex-wrap:wrap;gap:8px;}
+.role-check{
+  display:flex;align-items:center;gap:6px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;
+  text-transform:uppercase;color:var(--text-dim);
+  background:var(--bg-void);border:1px solid var(--line);
+  padding:8px 12px;cursor:pointer;user-select:none;transition:all .15s;
+}
+.role-check:has(input:checked){
+  color:var(--toxic);border-color:var(--toxic-dim);background:rgba(180,255,57,0.06);
+}
+.role-check input{accent-color:var(--toxic);}
+.room-toggle{display:flex;gap:2px;margin-bottom:12px;}
+.room-toggle .rt{
+  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
+  padding:8px 16px;background:var(--bg-void);border:1px solid var(--line);color:var(--text-dim);cursor:pointer;
+}
+.room-toggle .rt.active{color:var(--fire);border-color:var(--fire-dim);background:rgba(255,90,31,0.08);}
+
+/* ROSTER CARDS */
+.roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin-top:14px;}
+.p-card{
+  background:var(--bg-panel);border:1px solid var(--line);padding:16px;
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%);
+  position:relative;
+}
+.p-card .role-tag{
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--toxic);
+  letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;display:block;
+}
+.p-card .p-name{
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px;margin:24px 0 2px;
+  padding-right:70px;
+}
+.p-card .p-ign{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dim);margin-bottom:12px;}
+.p-card .stat-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim);padding:3px 0;border-top:1px solid var(--line);}
+.p-card .stat-row b{color:var(--text);font-family:'JetBrains Mono',monospace;}
+.p-card .kda-big{
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:28px;color:var(--fire);
+  margin-top:10px;
+}
+.p-card .kda-big span{font-size:12px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:1px;}
+.p-card .del{position:absolute;top:10px;right:10px;font-size:11px;display:flex;gap:4px;}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;margin-top:14px;border:1px solid var(--line);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--text-dim);text-align:left;
+  padding:10px 12px;background:var(--bg-panel-alt);border-bottom:1px solid var(--line);
+}
+td{padding:9px 12px;border-bottom:1px solid var(--line);font-family:'Inter',sans-serif;color:var(--text);}
+tr:hover td{background:rgba(255,90,31,0.04);}
+.mono{font-family:'JetBrains Mono',monospace;}
+.fire-txt{color:var(--fire);font-weight:600;}
+.toxic-txt{color:var(--toxic);font-weight:600;}
+.danger-txt{color:var(--danger);}
+.placement-tag{
+  font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 8px;
+  border:1px solid var(--toxic-dim);color:var(--toxic);display:inline-block;
+}
+
+/* LEADERBOARD */
+.lb-row{
+  display:grid;grid-template-columns:36px 1fr repeat(4,90px) 60px;
+  align-items:center;gap:10px;padding:12px 14px;
+  background:var(--bg-panel);border:1px solid var(--line);border-left:3px solid var(--line);
+  margin-bottom:6px;
+}
+.lb-row.rank-1{border-left-color:var(--fire);}
+.lb-row .rk{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:20px;color:var(--text-faint);}
+.lb-row.rank-1 .rk{color:var(--fire);}
+.lb-name{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:17px;}
+.lb-ign{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);}
+.lb-col{text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;}
+.lb-col .lb-label{display:block;font-size:9px;color:var(--text-faint);letter-spacing:1px;margin-bottom:2px;}
+.lb-head{display:grid;grid-template-columns:36px 1fr repeat(4,90px) 60px;gap:10px;padding:0 14px 6px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);letter-spacing:1.5px;text-transform:uppercase;}
+.lb-head span:not(:first-child){text-align:right;}
+
+.empty{
+  padding:30px;text-align:center;color:var(--text-faint);
+  font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:1px;
+  border:1px dashed var(--line);
+}
+
+.squad-total{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;
+  background:var(--line);border:1px solid var(--line);margin-top:14px;
+}
+.squad-total .cell{background:var(--bg-panel);padding:16px;}
+.squad-total .cell .num{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:30px;color:var(--fire);}
+.squad-total .cell .lab{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
+
+.ind-stats{margin-top:14px;}
+.ind-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);}
+.ind-grid .cell{background:var(--bg-panel);padding:16px;}
+.ind-grid .cell .num{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:30px;}
+.ind-grid .cell .num.kills{color:var(--fire);}
+.ind-grid .cell .num.dmg{color:var(--toxic);}
+.ind-grid .cell .num.deaths{color:var(--danger);}
+.ind-grid .cell .lab{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
+.map-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:12px;}
+.map-list .m-cell{
+  background:var(--bg-panel);border:1px solid var(--line);padding:12px;
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%);
+}
+.map-list .m-cell .m-name{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:15px;letter-spacing:.5px;}
+.map-list .m-cell .m-count{font-family:'JetBrains Mono',monospace;font-size:22px;color:var(--ice);font-weight:700;margin-top:4px;}
+.map-list .m-cell .m-count span{font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:1px;}
+
+.toast{
+  position:fixed;bottom:20px;right:20px;background:var(--bg-panel-alt);
+  border:1px solid var(--toxic);color:var(--toxic);padding:10px 16px;
+  font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:1px;
+  opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none;z-index:99;
+}
+.toast.show{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hud-top">
+    <div>
+      <div class="brand-eyebrow">// panel de estadísticas</div>
+      <div class="brand-name">
+        <input id="squadNameInput" value="CGC ESPORT" spellcheck="false">
+      </div>
+      <input id="tournamentInput" class="tournament-sub" value="Chiapas Gaming Cup" spellcheck="false">
+    </div>
+    <div class="zone-tag">STATUS: <b>EN VIVO</b><br>REGISTRO DE PARTIDAS · KILLS · DAÑO · KDA</div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="roster">Roster</div>
+    <div class="tab" data-tab="match">Registrar Partida</div>
+    <div class="tab" data-tab="stats">Estadísticas</div>
+  </div>
+
+  <!-- ROSTER -->
+  <div class="panel active" id="panel-roster">
+    <div class="sec-label">Añadir jugador</div>
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="field"><label>Nombre</label><input id="pName" placeholder="Ej. Diego"></div>
+        <div class="field"><label>IGN (nick in-game)</label><input id="pIgn" placeholder="Ej. DZY_Fenix"></div>
+        <div class="field" style="grid-column:1/-1">
+          <label>Rol (elige 1 o 2)</label>
+          <div class="role-check-group" id="pRoleGroup">
+            <label class="role-check"><input type="checkbox" value="Rusher L1"> Rusher L1</label>
+            <label class="role-check"><input type="checkbox" value="Rusher L2"> Rusher L2</label>
+            <label class="role-check"><input type="checkbox" value="Granadier"> Granadier</label>
+            <label class="role-check"><input type="checkbox" value="Soporte"> Soporte</label>
+            <label class="role-check"><input type="checkbox" value="IGL"> IGL</label>
+          </div>
+        </div>
+      </div>
+      <button class="btn" id="playerFormBtn" onclick="addPlayer()">+ Añadir jugador</button>
+      <button class="btn ghost" id="cancelEditBtn" style="display:none;margin-left:8px;" onclick="cancelEditPlayer()">cancelar edición</button>
+    </div>
+
+    <div class="sec-label">Roster actual</div>
+    <div id="rosterGrid" class="roster-grid"></div>
+  </div>
+
+  <!-- MATCH ENTRY -->
+  <div class="panel" id="panel-match">
+    <div class="sec-label">Registrar resultado de partida</div>
+    <div class="form-card">
+      <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px;">Tipo de sala</label>
+      <div class="room-toggle" id="roomToggle">
+        <div class="rt active" data-room="scrim">Scrim (12 equipos)</div>
+        <div class="rt" data-room="liga">Sala de Liga (15 equipos)</div>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label>Jugador</label><select id="mPlayer"></select></div>
+        <div class="field"><label>Mapa</label>
+          <select id="mLabel">
+            <option>Bermuda</option>
+            <option>Kalahari</option>
+            <option>Nexterra</option>
+            <option>Purgatorio</option>
+            <option>Solara</option>
+          </select>
+        </div>
+        <div class="field"><label>Kills</label><input id="mKills" type="number" min="0" value="0"></div>
+        <div class="field"><label>Asistencias</label><input id="mAssists" type="number" min="0" value="0"></div>
+        <div class="field"><label>Muertes</label><input id="mDeaths" type="number" min="0" value="0"></div>
+        <div class="field"><label>Daño</label><input id="mDamage" type="number" min="0" value="0"></div>
+        <div class="field"><label>Colocación</label><select id="mPlacement"></select></div>
+      </div>
+      <button class="btn" onclick="addMatch()">+ Registrar partida</button>
+    </div>
+
+    <div class="sec-label">Historial de partidas</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Jugador</th><th>Partida</th><th>Sala</th><th>Kills</th><th>Asist.</th><th>Muertes</th><th>Daño</th><th>Coloc.</th><th></th>
+        </tr></thead>
+        <tbody id="matchTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="panel" id="panel-stats">
+    <div class="sec-label">Totales de escuadra</div>
+    <div id="squadTotals" class="squad-total"></div>
+    <div class="map-list" id="squadMapList" style="margin-top:12px;"></div>
+
+    <div class="sec-label">Tabla de posiciones (por KDA)</div>
+    <div class="lb-head">
+      <span>#</span><span>Jugador</span><span>Kills</span><span>Muertes</span><span>Dmg prom.</span><span>KDA</span><span>PJ</span>
+    </div>
+    <div id="leaderboard"></div>
+
+    <div class="sec-label">Estadísticas individuales</div>
+    <div class="form-card">
+      <div class="field" style="max-width:320px;">
+        <label>Elegí un jugador</label>
+        <select id="statsPlayerSelect" onchange="renderIndividualStats()"></select>
+      </div>
+    </div>
+    <div id="individualStats"></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let data = { squadName:"CGC ESPORT", tournamentName:"Chiapas Gaming Cup", players: [], matches: [] };
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+async function loadData(){
+  try{
+    const res = await window.storage.get('ff-squad-data');
+    if(res && res.value){
+      data = JSON.parse(res.value);
+    }
+  }catch(e){ /* no data yet */ }
+  document.getElementById('squadNameInput').value = data.squadName || "CGC ESPORT";
+  document.getElementById('tournamentInput').value = data.tournamentName || "Chiapas Gaming Cup";
+  renderAll();
+}
+
+async function saveData(){
+  try{
+    await window.storage.set('ff-squad-data', JSON.stringify(data));
+  }catch(e){
+    console.error('Error guardando datos', e);
+  }
+}
+
+document.getElementById('squadNameInput').addEventListener('change', (e)=>{
+  data.squadName = e.target.value || "CGC ESPORT";
+  saveData();
+});
+document.getElementById('tournamentInput').addEventListener('change', (e)=>{
+  data.tournamentName = e.target.value || "Chiapas Gaming Cup";
+  saveData();
+});
+
+// TABS
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
+  });
+});
+
+// limita la seleccion de roles a maximo 2
+document.getElementById('pRoleGroup').addEventListener('change', (e)=>{
+  const checks = document.querySelectorAll('#pRoleGroup input[type=checkbox]');
+  const checked = [...checks].filter(c=>c.checked);
+  if(checked.length > 2){
+    e.target.checked = false;
+    showToast('Máximo 2 roles por jugador');
+  }
+});
+
+let editingPlayerId = null;
+
+function addPlayer(){
+  const name = document.getElementById('pName').value.trim();
+  const ign = document.getElementById('pIgn').value.trim();
+  const roles = [...document.querySelectorAll('#pRoleGroup input[type=checkbox]:checked')].map(c=>c.value);
+  if(!name){ showToast('Escribe un nombre'); return; }
+  if(roles.length===0){ showToast('Elige al menos 1 rol'); return; }
+
+  if(editingPlayerId){
+    const pl = data.players.find(p=>p.id===editingPlayerId);
+    if(pl){ pl.name = name; pl.ign = ign || '—'; pl.roles = roles; }
+    showToast('Jugador actualizado');
+    cancelEditPlayer();
+  } else {
+    data.players.push({ id: uid(), name, ign: ign || '—', roles });
+    showToast('Jugador añadido');
+  }
+
+  document.getElementById('pName').value='';
+  document.getElementById('pIgn').value='';
+  document.querySelectorAll('#pRoleGroup input[type=checkbox]').forEach(c=>c.checked=false);
+  saveData();
+  renderAll();
+}
+
+function editPlayer(id){
+  const p = data.players.find(pl=>pl.id===id);
+  if(!p) return;
+  editingPlayerId = id;
+  document.getElementById('pName').value = p.name;
+  document.getElementById('pIgn').value = p.ign === '—' ? '' : p.ign;
+  const roles = p.roles || [p.role];
+  document.querySelectorAll('#pRoleGroup input[type=checkbox]').forEach(c=>{
+    c.checked = roles.includes(c.value);
+  });
+  document.getElementById('playerFormBtn').textContent = '✓ Guardar cambios';
+  document.getElementById('cancelEditBtn').style.display = 'inline-block';
+  document.querySelector('.tab[data-tab="roster"]').click();
+  document.getElementById('pName').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function cancelEditPlayer(){
+  editingPlayerId = null;
+  document.getElementById('pName').value='';
+  document.getElementById('pIgn').value='';
+  document.querySelectorAll('#pRoleGroup input[type=checkbox]').forEach(c=>c.checked=false);
+  document.getElementById('playerFormBtn').textContent = '+ Añadir jugador';
+  document.getElementById('cancelEditBtn').style.display = 'none';
+}
+
+// tipo de sala (scrim vs liga) y colocaciones dinamicas
+let currentRoom = 'scrim';
+document.querySelectorAll('#roomToggle .rt').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#roomToggle .rt').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentRoom = btn.dataset.room;
+    renderPlacementOptions();
+  });
+});
+
+function renderPlacementOptions(){
+  const sel = document.getElementById('mPlacement');
+  const max = currentRoom === 'liga' ? 15 : 12;
+  let opts = '';
+  for(let i=1;i<=max;i++){
+    opts += `<option value="Top ${i}">Top ${i}${i===1?' — Booyah 🔥':''}</option>`;
+  }
+  sel.innerHTML = opts;
+}
+
+function removePlayer(id){
+  data.players = data.players.filter(p=>p.id!==id);
+  data.matches = data.matches.filter(m=>m.playerId!==id);
+  saveData();
+  renderAll();
+}
+
+function addMatch(){
+  const playerId = document.getElementById('mPlayer').value;
+  if(!playerId){ showToast('Añade jugadores primero'); return; }
+  const label = document.getElementById('mLabel').value;
+  const kills = parseInt(document.getElementById('mKills').value)||0;
+  const assists = parseInt(document.getElementById('mAssists').value)||0;
+  const deaths = parseInt(document.getElementById('mDeaths').value)||0;
+  const damage = parseInt(document.getElementById('mDamage').value)||0;
+  const placement = document.getElementById('mPlacement').value;
+  const roomType = currentRoom;
+  data.matches.push({ id:uid(), playerId, label, kills, assists, deaths, damage, placement, roomType });
+  document.getElementById('mKills').value=0;
+  document.getElementById('mAssists').value=0;
+  document.getElementById('mDeaths').value=0;
+  document.getElementById('mDamage').value=0;
+  saveData();
+  renderAll();
+  showToast('Partida registrada');
+}
+
+function removeMatch(id){
+  data.matches = data.matches.filter(m=>m.id!==id);
+  saveData();
+  renderAll();
+}
+
+function playerStats(playerId){
+  const ms = data.matches.filter(m=>m.playerId===playerId);
+  const kills = ms.reduce((s,m)=>s+m.kills,0);
+  const assists = ms.reduce((s,m)=>s+m.assists,0);
+  const deaths = ms.reduce((s,m)=>s+m.deaths,0);
+  const damage = ms.reduce((s,m)=>s+m.damage,0);
+  const played = ms.length;
+  const kda = deaths>0 ? ((kills+assists)/deaths) : (kills+assists);
+  const avgDmg = played>0 ? Math.round(damage/played) : 0;
+  return { kills, assists, deaths, damage, played, kda, avgDmg };
+}
+
+function renderAll(){
+  renderRoster();
+  renderMatchSelect();
+  renderMatchTable();
+  renderStats();
+  renderStatsPlayerSelect();
+  renderIndividualStats();
+}
+
+function renderStatsPlayerSelect(){
+  const sel = document.getElementById('statsPlayerSelect');
+  const prev = sel.value;
+  sel.innerHTML = data.players.length===0
+    ? '<option value="">— sin jugadores —</option>'
+    : data.players.map(p=>`<option value="${p.id}">${p.name} (${p.ign})</option>`).join('');
+  if(prev && data.players.some(p=>p.id===prev)) sel.value = prev;
+}
+
+const MAPS = ['Bermuda','Kalahari','Nexterra','Purgatorio','Solara'];
+
+function renderIndividualStats(){
+  const box = document.getElementById('individualStats');
+  const sel = document.getElementById('statsPlayerSelect');
+  const playerId = sel ? sel.value : '';
+  if(!playerId){
+    box.innerHTML = '<div class="empty">Elegí un jugador para ver su desempeño individual.</div>';
+    return;
+  }
+  const p = data.players.find(pl=>pl.id===playerId);
+  const s = playerStats(playerId);
+  const ms = data.matches.filter(m=>m.playerId===playerId);
+
+  const mapCounts = {};
+  MAPS.forEach(m=>mapCounts[m]=0);
+  ms.forEach(m=>{ if(mapCounts[m.label] !== undefined) mapCounts[m.label]++; else mapCounts[m.label]=1; });
+
+  box.innerHTML = `
+    <div class="ind-stats">
+      <div class="ind-grid">
+        <div class="cell"><div class="num kills">${s.kills}</div><div class="lab">Kills totales</div></div>
+        <div class="cell"><div class="num dmg">${s.damage.toLocaleString()}</div><div class="lab">Daño total</div></div>
+        <div class="cell"><div class="num deaths">${s.deaths}</div><div class="lab">Muertes totales</div></div>
+        <div class="cell"><div class="num" style="color:var(--text)">${s.assists}</div><div class="lab">Asistencias</div></div>
+        <div class="cell"><div class="num" style="color:var(--fire)">${s.kda.toFixed(2)}</div><div class="lab">KDA</div></div>
+        <div class="cell"><div class="num" style="color:var(--toxic)">${s.avgDmg}</div><div class="lab">Daño promedio</div></div>
+        <div class="cell"><div class="num" style="color:var(--text)">${s.played}</div><div class="lab">Partidas jugadas</div></div>
+      </div>
+      <div class="sec-label">Mapas jugados — ${p.name}</div>
+      <div class="map-list">
+        ${Object.entries(mapCounts).map(([map,count])=>`
+          <div class="m-cell">
+            <div class="m-name">${map}</div>
+            <div class="m-count">${count}<span> partidas</span></div>
+          </div>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderRoster(){
+  const grid = document.getElementById('rosterGrid');
+  if(data.players.length===0){
+    grid.innerHTML = '<div class="empty">Sin jugadores todavía. Añade tu primer integrante arriba.</div>';
+    return;
+  }
+  grid.innerHTML = data.players.map(p=>{
+    const s = playerStats(p.id);
+    return `<div class="p-card">
+      <div class="del">
+        <button class="btn ghost" onclick="editPlayer('${p.id}')">editar</button>
+        <button class="btn ghost" onclick="removePlayer('${p.id}')">quitar</button>
+      </div>
+      <div class="p-name">${p.name}</div>
+      <div class="p-ign">${p.ign}</div>
+      <div class="role-tag">${(p.roles||[p.role]).join(' / ')}</div>
+      <div class="stat-row"><span>Partidas</span><b>${s.played}</b></div>
+      <div class="stat-row"><span>Kills totales</span><b>${s.kills}</b></div>
+      <div class="stat-row"><span>Daño promedio</span><b>${s.avgDmg}</b></div>
+      <div class="kda-big">${s.kda.toFixed(2)}<span> KDA</span></div>
+    </div>`;
+  }).join('');
+}
+
+function renderMatchSelect(){
+  const sel = document.getElementById('mPlayer');
+  sel.innerHTML = data.players.length===0
+    ? '<option value="">— añade jugadores primero —</option>'
+    : data.players.map(p=>`<option value="${p.id}">${p.name} (${p.ign})</option>`).join('');
+}
+
+function renderMatchTable(){
+  const body = document.getElementById('matchTableBody');
+  if(data.matches.length===0){
+    body.innerHTML = '<tr><td colspan="9"><div class="empty">Sin partidas registradas.</div></td></tr>';
+    return;
+  }
+  const sorted = [...data.matches].reverse();
+  body.innerHTML = sorted.map(m=>{
+    const p = data.players.find(pl=>pl.id===m.playerId);
+    const pname = p ? p.name : '(eliminado)';
+    return `<tr>
+      <td>${pname}</td>
+      <td class="mono">${m.label}</td>
+      <td class="mono">${m.roomType==='liga' ? 'Sala de Liga' : 'Scrim'}</td>
+      <td class="fire-txt mono">${m.kills}</td>
+      <td class="mono">${m.assists}</td>
+      <td class="danger-txt mono">${m.deaths}</td>
+      <td class="toxic-txt mono">${m.damage}</td>
+      <td><span class="placement-tag">${m.placement}</span></td>
+      <td><button class="btn ghost" onclick="removeMatch('${m.id}')">borrar</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderStats(){
+  // squad totals
+  const totalKills = data.matches.reduce((s,m)=>s+m.kills,0);
+  const totalDamage = data.matches.reduce((s,m)=>s+m.damage,0);
+  const totalDeaths = data.matches.reduce((s,m)=>s+m.deaths,0);
+  const totalMatches = data.matches.length;
+  const booyahs = data.matches.filter(m=>m.placement.includes('Booyah')).length;
+
+  document.getElementById('squadTotals').innerHTML = `
+    <div class="cell"><div class="num">${totalMatches}</div><div class="lab">Partidas jugadas</div></div>
+    <div class="cell"><div class="num">${totalKills}</div><div class="lab">Kills totales</div></div>
+    <div class="cell"><div class="num">${totalDamage.toLocaleString()}</div><div class="lab">Daño total</div></div>
+    <div class="cell"><div class="num">${totalDeaths}</div><div class="lab">Muertes totales</div></div>
+    <div class="cell"><div class="num">${booyahs}</div><div class="lab">Booyahs 🔥</div></div>
+  `;
+
+  const squadMapCounts = {};
+  MAPS.forEach(m=>squadMapCounts[m]=0);
+  data.matches.forEach(m=>{ if(squadMapCounts[m.label] !== undefined) squadMapCounts[m.label]++; else squadMapCounts[m.label]=1; });
+  document.getElementById('squadMapList').innerHTML = Object.entries(squadMapCounts).map(([map,count])=>`
+    <div class="m-cell">
+      <div class="m-name">${map}</div>
+      <div class="m-count">${count}<span> partidas</span></div>
+    </div>`).join('');
+
+  // leaderboard
+  const lb = document.getElementById('leaderboard');
+  if(data.players.length===0){
+    lb.innerHTML = '<div class="empty">Añade jugadores y registra partidas para ver la tabla.</div>';
+    return;
+  }
+  const ranked = data.players.map(p=>({p, s: playerStats(p.id)})).sort((a,b)=>b.s.kda - a.s.kda);
+  lb.innerHTML = ranked.map((r,i)=>`
+    <div class="lb-row ${i===0?'rank-1':''}">
+      <div class="rk">${i+1}</div>
+      <div><div class="lb-name">${r.p.name}</div><div class="lb-ign">${r.p.ign}</div></div>
+      <div class="lb-col">${r.s.kills}<span class="lb-label">Kills</span></div>
+      <div class="lb-col">${r.s.deaths}<span class="lb-label">Muertes</span></div>
+      <div class="lb-col">${r.s.avgDmg}<span class="lb-label">Dmg prom</span></div>
+      <div class="lb-col fire-txt" style="font-size:16px;font-weight:700">${r.s.kda.toFixed(2)}<span class="lb-label" style="color:var(--text-faint)">KDA</span></div>
+      <div class="lb-col">${r.s.played}<span class="lb-label">PJ</span></div>
+    </div>
+  `).join('');
+}
+
+renderPlacementOptions();
+loadData();
+</script>
+</body>
+</html>
