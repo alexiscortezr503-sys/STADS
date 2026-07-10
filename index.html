@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>CGC ESPORT — Panel de Estadísticas</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap');
@@ -198,21 +199,24 @@ tr:hover td{background:rgba(255,90,31,0.04);}
 
 /* LEADERBOARD */
 .lb-row{
-  display:grid;grid-template-columns:36px 1fr repeat(4,90px) 60px;
-  align-items:center;gap:10px;padding:12px 14px;
+  display:flex;align-items:center;gap:14px;padding:12px 14px;
   background:var(--bg-panel);border:1px solid var(--line);border-left:3px solid var(--line);
   margin-bottom:6px;
 }
 .lb-row.rank-1{border-left-color:var(--fire);}
-.lb-row .rk{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:20px;color:var(--text-faint);}
+.lb-row .rk{flex:0 0 26px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:20px;color:var(--text-faint);}
 .lb-row.rank-1 .rk{color:var(--fire);}
+.lb-row > div:nth-child(2){flex:1 1 auto;min-width:0;}
 .lb-name{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:17px;}
 .lb-ign{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);}
-.lb-col{text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;}
+.lb-stats{display:flex;gap:14px;flex:0 0 auto;}
+.lb-col{text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;width:78px;}
 .lb-col .lb-label{display:block;font-size:9px;color:var(--text-faint);letter-spacing:1px;margin-bottom:2px;}
-.lb-head{display:grid;grid-template-columns:36px 1fr repeat(4,90px) 60px;gap:10px;padding:0 14px 6px;
+.lb-head{display:flex;gap:14px;padding:0 14px 6px;
   font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);letter-spacing:1.5px;text-transform:uppercase;}
-.lb-head span:not(:first-child){text-align:right;}
+.lb-head span:first-child{flex:0 0 26px;}
+.lb-head span:nth-child(2){flex:1 1 auto;}
+.lb-head span:not(:first-child):not(:nth-child(2)){width:78px;text-align:right;}
 
 .empty{
   padding:30px;text-align:center;color:var(--text-faint);
@@ -252,6 +256,45 @@ tr:hover td{background:rgba(255,90,31,0.04);}
   opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none;z-index:99;
 }
 .toast.show{opacity:1;transform:translateY(0);}
+
+/* MOBILE */
+@media (max-width:640px){
+  body{padding:16px 12px 50px;}
+  .hud-top{align-items:flex-start;}
+  .brand-name{font-size:26px;}
+  .brand-name input{font-size:26px;max-width:100%;}
+  .zone-tag{text-align:left;font-size:11px;}
+
+  .tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;padding-bottom:2px;}
+  .tab{padding:10px 14px;font-size:13px;white-space:nowrap;flex:0 0 auto;}
+
+  .form-grid{grid-template-columns:1fr 1fr;gap:10px;}
+  .field[style*="grid-column"]{grid-column:1/-1 !important;}
+
+  .roster-grid, .jornada-grid{grid-template-columns:1fr;}
+  .p-card .p-name{padding-right:0;margin-top:34px;}
+  .p-card .del{flex-wrap:wrap;max-width:calc(100% - 20px);}
+
+  .squad-total, .ind-grid{grid-template-columns:1fr 1fr;}
+  .map-list{grid-template-columns:1fr 1fr;}
+
+  .lb-head{display:none;}
+  .lb-row{flex-wrap:wrap;}
+  .lb-stats{flex:1 1 100%;flex-wrap:wrap;gap:6px 16px;margin-top:8px;}
+  .lb-col{text-align:left;width:auto;min-width:70px;}
+  .lb-col .lb-label{margin-bottom:0;margin-right:4px;display:inline;}
+
+  table{font-size:12px;}
+  th, td{padding:8px;}
+
+  .room-toggle{flex-wrap:wrap;}
+  .role-check-group{gap:6px;}
+  .role-check{padding:7px 10px;font-size:10px;}
+
+  .btn{padding:12px 18px;font-size:14px;width:100%;}
+  .btn.ghost{width:auto;}
+  #cancelEditBtn{margin-left:0 !important;margin-top:8px !important;}
+}
 
 .jornada-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:14px;}
 .j-card{
@@ -864,11 +907,13 @@ function renderStats(){
     <div class="lb-row ${i===0?'rank-1':''}">
       <div class="rk">${i+1}</div>
       <div><div class="lb-name">${r.p.name}</div><div class="lb-ign">${r.p.ign}</div></div>
-      <div class="lb-col">${r.s.kills}<span class="lb-label">Kills</span></div>
-      <div class="lb-col">${r.s.deaths}<span class="lb-label">Muertes</span></div>
-      <div class="lb-col">${r.s.avgDmg}<span class="lb-label">Dmg prom</span></div>
-      <div class="lb-col fire-txt" style="font-size:16px;font-weight:700">${r.s.kda.toFixed(2)}<span class="lb-label" style="color:var(--text-faint)">KDA</span></div>
-      <div class="lb-col">${r.s.played}<span class="lb-label">PJ</span></div>
+      <div class="lb-stats">
+        <div class="lb-col">${r.s.kills}<span class="lb-label">Kills</span></div>
+        <div class="lb-col">${r.s.deaths}<span class="lb-label">Muertes</span></div>
+        <div class="lb-col">${r.s.avgDmg}<span class="lb-label">Dmg prom</span></div>
+        <div class="lb-col fire-txt" style="font-size:16px;font-weight:700">${r.s.kda.toFixed(2)}<span class="lb-label" style="color:var(--text-faint)">KDA</span></div>
+        <div class="lb-col">${r.s.played}<span class="lb-label">PJ</span></div>
+      </div>
     </div>
   `).join('');
 }
