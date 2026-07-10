@@ -378,11 +378,16 @@ function showToast(msg){
   setTimeout(()=>t.classList.remove('show'), 1800);
 }
 
+const usesClaudeStorage = (typeof window.storage !== 'undefined');
+
 async function loadData(){
   try{
-    const res = await window.storage.get('ff-squad-data');
-    if(res && res.value){
-      data = JSON.parse(res.value);
+    if(usesClaudeStorage){
+      const res = await window.storage.get('ff-squad-data');
+      if(res && res.value){ data = JSON.parse(res.value); }
+    } else {
+      const raw = localStorage.getItem('ff-squad-data');
+      if(raw){ data = JSON.parse(raw); }
     }
   }catch(e){ /* no data yet */ }
   document.getElementById('squadNameInput').value = data.squadName || "CGC ESPORT";
@@ -392,7 +397,11 @@ async function loadData(){
 
 async function saveData(){
   try{
-    await window.storage.set('ff-squad-data', JSON.stringify(data));
+    if(usesClaudeStorage){
+      await window.storage.set('ff-squad-data', JSON.stringify(data));
+    } else {
+      localStorage.setItem('ff-squad-data', JSON.stringify(data));
+    }
   }catch(e){
     console.error('Error guardando datos', e);
   }
