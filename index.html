@@ -252,6 +252,30 @@ tr:hover td{background:rgba(255,90,31,0.04);}
   opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none;z-index:99;
 }
 .toast.show{opacity:1;transform:translateY(0);}
+
+.jornada-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:14px;}
+.j-card{
+  background:var(--bg-panel);border:1px solid var(--line);padding:16px;
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%);
+  position:relative;
+}
+.j-card.is-active{border-color:var(--toxic);}
+.j-badge{
+  font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--ice);border:1px solid var(--ice);display:inline-block;padding:2px 8px;margin-bottom:8px;
+}
+.j-name{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:20px;margin-bottom:2px;}
+.j-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:12px;}
+.j-active-flag{
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--toxic);letter-spacing:1px;
+  margin-bottom:10px;text-transform:uppercase;
+}
+.j-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.active-jornada-banner{
+  font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--toxic);
+  border:1px dashed var(--toxic-dim);padding:10px 14px;margin-bottom:14px;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+}
 </style>
 </head>
 <body>
@@ -270,6 +294,7 @@ tr:hover td{background:rgba(255,90,31,0.04);}
 
   <div class="tabs">
     <div class="tab active" data-tab="roster">Roster</div>
+    <div class="tab" data-tab="jornadas">Jornadas</div>
     <div class="tab" data-tab="match">Registrar Partida</div>
     <div class="tab" data-tab="stats">Estadísticas</div>
   </div>
@@ -300,9 +325,30 @@ tr:hover td{background:rgba(255,90,31,0.04);}
     <div id="rosterGrid" class="roster-grid"></div>
   </div>
 
+  <!-- JORNADAS -->
+  <div class="panel" id="panel-jornadas">
+    <div class="sec-label">Crear jornada</div>
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="field"><label>Nombre de la jornada</label><input id="jName" placeholder="Ej. Jornada 1 — Semana del 6 jul"></div>
+        <div class="field"><label>Tipo</label>
+          <select id="jType">
+            <option value="semanal">Semanal</option>
+            <option value="3dias">3 Días (6 Salas)</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn" onclick="addJornada()">+ Crear jornada</button>
+    </div>
+
+    <div class="sec-label">Jornadas guardadas</div>
+    <div id="jornadaGrid" class="jornada-grid"></div>
+  </div>
+
   <!-- MATCH ENTRY -->
   <div class="panel" id="panel-match">
     <div class="sec-label">Registrar resultado de partida</div>
+    <div id="activeJornadaBanner" class="active-jornada-banner" style="display:none;"></div>
     <div class="form-card">
       <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px;">Tipo de sala</label>
       <div class="room-toggle" id="roomToggle">
@@ -310,6 +356,7 @@ tr:hover td{background:rgba(255,90,31,0.04);}
         <div class="rt" data-room="liga">Sala de Liga (15 equipos)</div>
       </div>
       <div class="form-grid">
+        <div class="field"><label>Jornada</label><select id="mJornada"></select></div>
         <div class="field"><label>Jugador</label><select id="mPlayer"></select></div>
         <div class="field"><label>Mapa</label>
           <select id="mLabel">
@@ -333,7 +380,7 @@ tr:hover td{background:rgba(255,90,31,0.04);}
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th>Jugador</th><th>Partida</th><th>Sala</th><th>Kills</th><th>Asist.</th><th>Muertes</th><th>Daño</th><th>Coloc.</th><th></th>
+          <th>Jornada</th><th>Jugador</th><th>Partida</th><th>Sala</th><th>Kills</th><th>Asist.</th><th>Muertes</th><th>Daño</th><th>Coloc.</th><th></th>
         </tr></thead>
         <tbody id="matchTableBody"></tbody>
       </table>
@@ -342,6 +389,11 @@ tr:hover td{background:rgba(255,90,31,0.04);}
 
   <!-- STATS -->
   <div class="panel" id="panel-stats">
+    <div class="sec-label">Filtrar por jornada</div>
+    <div class="form-card" style="max-width:400px;">
+      <div class="field"><label>Ver estadísticas de</label><select id="statsJornadaSelect" onchange="onStatsJornadaChange()"></select></div>
+    </div>
+
     <div class="sec-label">Totales de escuadra</div>
     <div id="squadTotals" class="squad-total"></div>
     <div class="map-list" id="squadMapList" style="margin-top:12px;"></div>
@@ -367,7 +419,8 @@ tr:hover td{background:rgba(255,90,31,0.04);}
 <div class="toast" id="toast"></div>
 
 <script>
-let data = { squadName:"CGC ESPORT", tournamentName:"Chiapas Gaming Cup", players: [], matches: [] };
+let data = { squadName:"CGC ESPORT", tournamentName:"Chiapas Gaming Cup", players: [], matches: [], jornadas: [], activeJornadaId: null };
+let statsJornadaFilter = 'all';
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
@@ -390,6 +443,8 @@ async function loadData(){
       if(raw){ data = JSON.parse(raw); }
     }
   }catch(e){ /* no data yet */ }
+  if(!data.jornadas) data.jornadas = [];
+  if(data.activeJornadaId === undefined) data.activeJornadaId = null;
   document.getElementById('squadNameInput').value = data.squadName || "CGC ESPORT";
   document.getElementById('tournamentInput').value = data.tournamentName || "Chiapas Gaming Cup";
   renderAll();
@@ -515,7 +570,101 @@ function removePlayer(id){
   renderAll();
 }
 
+function addJornada(){
+  const name = document.getElementById('jName').value.trim();
+  const type = document.getElementById('jType').value;
+  if(!name){ showToast('Escribe un nombre para la jornada'); return; }
+  const j = { id: uid(), name, type, createdAt: Date.now() };
+  data.jornadas.push(j);
+  data.activeJornadaId = j.id;
+  document.getElementById('jName').value='';
+  saveData();
+  renderAll();
+  showToast('Jornada creada y activada');
+}
+
+function setActiveJornada(id){
+  data.activeJornadaId = id;
+  saveData();
+  renderAll();
+  showToast('Jornada activada');
+}
+
+function removeJornada(id){
+  const j = data.jornadas.find(jr=>jr.id===id);
+  if(!j) return;
+  const matchCount = data.matches.filter(m=>m.jornadaId===id).length;
+  const msg = matchCount>0
+    ? `Vas a borrar "${j.name}" y sus ${matchCount} partidas registradas (equipo e individuales). ¿Confirmas?`
+    : `¿Borrar la jornada "${j.name}"?`;
+  if(!confirm(msg)) return;
+  data.jornadas = data.jornadas.filter(jr=>jr.id!==id);
+  data.matches = data.matches.filter(m=>m.jornadaId!==id);
+  if(data.activeJornadaId === id) data.activeJornadaId = data.jornadas.length ? data.jornadas[data.jornadas.length-1].id : null;
+  if(statsJornadaFilter === id) statsJornadaFilter = 'all';
+  saveData();
+  renderAll();
+  showToast('Jornada borrada');
+}
+
+function renderJornadas(){
+  const grid = document.getElementById('jornadaGrid');
+  if(data.jornadas.length===0){
+    grid.innerHTML = '<div class="empty">Sin jornadas todavía. Crea la primera arriba.</div>';
+    return;
+  }
+  grid.innerHTML = [...data.jornadas].reverse().map(j=>{
+    const count = data.matches.filter(m=>m.jornadaId===j.id).length;
+    const isActive = j.id === data.activeJornadaId;
+    return `<div class="j-card ${isActive?'is-active':''}">
+      <div class="j-badge">${j.type==='3dias' ? '3 Días · 6 Salas' : 'Semanal'}</div>
+      ${isActive ? '<div class="j-active-flag">● jornada activa</div>' : ''}
+      <div class="j-name">${j.name}</div>
+      <div class="j-meta">${count} partida${count===1?'':'s'} registradas</div>
+      <div class="j-actions">
+        ${isActive ? '' : `<button class="btn ghost" onclick="setActiveJornada('${j.id}')">activar</button>`}
+        <button class="btn ghost" onclick="removeJornada('${j.id}')">borrar</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderJornadaSelects(){
+  const mSel = document.getElementById('mJornada');
+  const sSel = document.getElementById('statsJornadaSelect');
+  const banner = document.getElementById('activeJornadaBanner');
+
+  if(data.jornadas.length===0){
+    mSel.innerHTML = '<option value="">— crea una jornada primero —</option>';
+    banner.style.display = 'flex';
+    banner.innerHTML = `<span>No hay jornadas creadas.</span>`;
+  } else {
+    mSel.innerHTML = data.jornadas.map(j=>`<option value="${j.id}" ${j.id===data.activeJornadaId?'selected':''}>${j.name}</option>`).join('');
+    const active = data.jornadas.find(j=>j.id===data.activeJornadaId);
+    banner.style.display = 'flex';
+    banner.innerHTML = `<span>Jornada activa: <b>${active ? active.name : data.jornadas[0].name}</b></span>`;
+  }
+
+  const prevStatsVal = sSel.value;
+  sSel.innerHTML = '<option value="all">Todas las jornadas</option>' +
+    data.jornadas.map(j=>`<option value="${j.id}">${j.name}</option>`).join('');
+  if(prevStatsVal && (prevStatsVal==='all' || data.jornadas.some(j=>j.id===prevStatsVal))){
+    sSel.value = prevStatsVal;
+  } else {
+    sSel.value = 'all';
+    statsJornadaFilter = 'all';
+  }
+}
+
+function onStatsJornadaChange(){
+  statsJornadaFilter = document.getElementById('statsJornadaSelect').value;
+  renderStats();
+  renderIndividualStats();
+}
+
 function addMatch(){
+  const jornadaId = document.getElementById('mJornada').value;
+  if(!jornadaId){ showToast('Crea o activa una jornada primero'); return; }
   const playerId = document.getElementById('mPlayer').value;
   if(!playerId){ showToast('Añade jugadores primero'); return; }
   const label = document.getElementById('mLabel').value;
@@ -525,7 +674,7 @@ function addMatch(){
   const damage = parseInt(document.getElementById('mDamage').value)||0;
   const placement = document.getElementById('mPlacement').value;
   const roomType = currentRoom;
-  data.matches.push({ id:uid(), playerId, label, kills, assists, deaths, damage, placement, roomType });
+  data.matches.push({ id:uid(), jornadaId, playerId, label, kills, assists, deaths, damage, placement, roomType });
   document.getElementById('mKills').value=0;
   document.getElementById('mAssists').value=0;
   document.getElementById('mDeaths').value=0;
@@ -541,8 +690,10 @@ function removeMatch(id){
   renderAll();
 }
 
-function playerStats(playerId){
-  const ms = data.matches.filter(m=>m.playerId===playerId);
+function playerStats(playerId, jornadaId){
+  jornadaId = jornadaId || 'all';
+  let ms = data.matches.filter(m=>m.playerId===playerId);
+  if(jornadaId !== 'all') ms = ms.filter(m=>m.jornadaId===jornadaId);
   const kills = ms.reduce((s,m)=>s+m.kills,0);
   const assists = ms.reduce((s,m)=>s+m.assists,0);
   const deaths = ms.reduce((s,m)=>s+m.deaths,0);
@@ -555,6 +706,8 @@ function playerStats(playerId){
 
 function renderAll(){
   renderRoster();
+  renderJornadas();
+  renderJornadaSelects();
   renderMatchSelect();
   renderMatchTable();
   renderStats();
@@ -582,8 +735,9 @@ function renderIndividualStats(){
     return;
   }
   const p = data.players.find(pl=>pl.id===playerId);
-  const s = playerStats(playerId);
-  const ms = data.matches.filter(m=>m.playerId===playerId);
+  const s = playerStats(playerId, statsJornadaFilter);
+  let ms = data.matches.filter(m=>m.playerId===playerId);
+  if(statsJornadaFilter !== 'all') ms = ms.filter(m=>m.jornadaId===statsJornadaFilter);
 
   const mapCounts = {};
   MAPS.forEach(m=>mapCounts[m]=0);
@@ -646,14 +800,17 @@ function renderMatchSelect(){
 function renderMatchTable(){
   const body = document.getElementById('matchTableBody');
   if(data.matches.length===0){
-    body.innerHTML = '<tr><td colspan="9"><div class="empty">Sin partidas registradas.</div></td></tr>';
+    body.innerHTML = '<tr><td colspan="10"><div class="empty">Sin partidas registradas.</div></td></tr>';
     return;
   }
   const sorted = [...data.matches].reverse();
   body.innerHTML = sorted.map(m=>{
     const p = data.players.find(pl=>pl.id===m.playerId);
     const pname = p ? p.name : '(eliminado)';
+    const j = data.jornadas.find(jr=>jr.id===m.jornadaId);
+    const jname = j ? j.name : '—';
     return `<tr>
+      <td class="mono">${jname}</td>
       <td>${pname}</td>
       <td class="mono">${m.label}</td>
       <td class="mono">${m.roomType==='liga' ? 'Sala de Liga' : 'Scrim'}</td>
@@ -668,12 +825,16 @@ function renderMatchTable(){
 }
 
 function renderStats(){
-  // squad totals
-  const totalKills = data.matches.reduce((s,m)=>s+m.kills,0);
-  const totalDamage = data.matches.reduce((s,m)=>s+m.damage,0);
-  const totalDeaths = data.matches.reduce((s,m)=>s+m.deaths,0);
-  const totalMatches = data.matches.length;
-  const booyahs = data.matches.filter(m=>m.placement.includes('Booyah')).length;
+  // squad totals (respeta el filtro de jornada)
+  const filtered = statsJornadaFilter === 'all'
+    ? data.matches
+    : data.matches.filter(m=>m.jornadaId===statsJornadaFilter);
+
+  const totalKills = filtered.reduce((s,m)=>s+m.kills,0);
+  const totalDamage = filtered.reduce((s,m)=>s+m.damage,0);
+  const totalDeaths = filtered.reduce((s,m)=>s+m.deaths,0);
+  const totalMatches = filtered.length;
+  const booyahs = filtered.filter(m=>m.placement.includes('Booyah')).length;
 
   document.getElementById('squadTotals').innerHTML = `
     <div class="cell"><div class="num">${totalMatches}</div><div class="lab">Partidas jugadas</div></div>
@@ -685,7 +846,7 @@ function renderStats(){
 
   const squadMapCounts = {};
   MAPS.forEach(m=>squadMapCounts[m]=0);
-  data.matches.forEach(m=>{ if(squadMapCounts[m.label] !== undefined) squadMapCounts[m.label]++; else squadMapCounts[m.label]=1; });
+  filtered.forEach(m=>{ if(squadMapCounts[m.label] !== undefined) squadMapCounts[m.label]++; else squadMapCounts[m.label]=1; });
   document.getElementById('squadMapList').innerHTML = Object.entries(squadMapCounts).map(([map,count])=>`
     <div class="m-cell">
       <div class="m-name">${map}</div>
@@ -698,7 +859,7 @@ function renderStats(){
     lb.innerHTML = '<div class="empty">Añade jugadores y registra partidas para ver la tabla.</div>';
     return;
   }
-  const ranked = data.players.map(p=>({p, s: playerStats(p.id)})).sort((a,b)=>b.s.kda - a.s.kda);
+  const ranked = data.players.map(p=>({p, s: playerStats(p.id, statsJornadaFilter)})).sort((a,b)=>b.s.kda - a.s.kda);
   lb.innerHTML = ranked.map((r,i)=>`
     <div class="lb-row ${i===0?'rank-1':''}">
       <div class="rk">${i+1}</div>
