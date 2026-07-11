@@ -294,6 +294,16 @@ tr:hover td{background:rgba(255,90,31,0.04);}
   .btn{padding:12px 18px;font-size:14px;width:100%;}
   .btn.ghost{width:auto;}
   #cancelEditBtn{margin-left:0 !important;margin-top:8px !important;}
+
+  .perf-row{grid-template-columns:20px 1fr;grid-template-areas:"chk name" "k k" "a a" "d d" "dmg dmg";row-gap:6px;}
+  .perf-row input[type=checkbox]{grid-area:chk;}
+  .perf-row > div:nth-child(2){grid-area:name;}
+  .perf-row > div:nth-child(3){grid-area:k;display:flex;align-items:center;gap:6px;}
+  .perf-row > div:nth-child(4){grid-area:a;display:flex;align-items:center;gap:6px;}
+  .perf-row > div:nth-child(5){grid-area:d;display:flex;align-items:center;gap:6px;}
+  .perf-row > div:nth-child(6){grid-area:dmg;display:flex;align-items:center;gap:6px;}
+  .perf-row .pr-label{margin-bottom:0;width:60px;text-align:left;flex:0 0 auto;}
+  .game-perf-table{font-size:11px;}
 }
 
 .jornada-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:14px;}
@@ -319,6 +329,34 @@ tr:hover td{background:rgba(255,90,31,0.04);}
   border:1px dashed var(--toxic-dim);padding:10px 14px;margin-bottom:14px;
   display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
 }
+
+.perf-rows{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+.perf-row{
+  display:grid;grid-template-columns:22px 1fr repeat(4,80px);gap:10px;align-items:center;
+  background:var(--bg-void);border:1px solid var(--line);padding:10px 12px;
+}
+.perf-row.checked{border-color:var(--toxic-dim);}
+.perf-row input[type=checkbox]{accent-color:var(--toxic);width:16px;height:16px;}
+.perf-row .pr-name{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:14px;}
+.perf-row .pr-ign{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);}
+.perf-row input[type=number]{
+  width:100%;background:var(--bg-panel);border:1px solid var(--line);color:var(--text);
+  padding:6px 6px;font-size:13px;text-align:center;
+}
+.perf-row .pr-label{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text-faint);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;text-align:center;}
+
+.game-card{
+  background:var(--bg-panel);border:1px solid var(--line);border-left:3px solid var(--line);
+  padding:14px 16px;margin-bottom:10px;
+}
+.game-card.is-booyah{border-left-color:var(--fire);}
+.game-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+.game-tags{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.game-tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);border:1px solid var(--line);padding:3px 8px;}
+.game-tag.map{color:var(--ice);border-color:var(--ice);}
+.game-perf-table{width:100%;border-collapse:collapse;font-size:12px;}
+.game-perf-table th{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-faint);text-transform:uppercase;letter-spacing:1px;text-align:left;padding:5px 8px;}
+.game-perf-table td{padding:5px 8px;border-top:1px solid var(--line);}
 </style>
 </head>
 <body>
@@ -400,7 +438,6 @@ tr:hover td{background:rgba(255,90,31,0.04);}
       </div>
       <div class="form-grid">
         <div class="field"><label>Jornada</label><select id="mJornada"></select></div>
-        <div class="field"><label>Jugador</label><select id="mPlayer"></select></div>
         <div class="field"><label>Mapa</label>
           <select id="mLabel">
             <option>Bermuda</option>
@@ -410,24 +447,17 @@ tr:hover td{background:rgba(255,90,31,0.04);}
             <option>Solara</option>
           </select>
         </div>
-        <div class="field"><label>Kills</label><input id="mKills" type="number" min="0" value="0"></div>
-        <div class="field"><label>Asistencias</label><input id="mAssists" type="number" min="0" value="0"></div>
-        <div class="field"><label>Muertes</label><input id="mDeaths" type="number" min="0" value="0"></div>
-        <div class="field"><label>Daño</label><input id="mDamage" type="number" min="0" value="0"></div>
-        <div class="field"><label>Colocación</label><select id="mPlacement"></select></div>
+        <div class="field"><label>Colocación del equipo</label><select id="mPlacement"></select></div>
       </div>
-      <button class="btn" onclick="addMatch()">+ Registrar partida</button>
+
+      <div class="sec-label" style="margin-top:22px;">Stats de cada jugador en esta partida</div>
+      <div id="perfRows" class="perf-rows"></div>
+
+      <button class="btn" style="margin-top:18px;" onclick="saveGame()">💾 Guardar partida completa</button>
     </div>
 
     <div class="sec-label">Historial de partidas</div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr>
-          <th>Jornada</th><th>Jugador</th><th>Partida</th><th>Sala</th><th>Kills</th><th>Asist.</th><th>Muertes</th><th>Daño</th><th>Coloc.</th><th></th>
-        </tr></thead>
-        <tbody id="matchTableBody"></tbody>
-      </table>
-    </div>
+    <div id="gamesHistory"></div>
   </div>
 
   <!-- STATS -->
@@ -462,7 +492,7 @@ tr:hover td{background:rgba(255,90,31,0.04);}
 <div class="toast" id="toast"></div>
 
 <script>
-let data = { squadName:"CGC ESPORT", tournamentName:"Chiapas Gaming Cup", players: [], matches: [], jornadas: [], activeJornadaId: null };
+let data = { squadName:"CGC ESPORT", tournamentName:"Chiapas Gaming Cup", players: [], games: [], performances: [], jornadas: [], activeJornadaId: null };
 let statsJornadaFilter = 'all';
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
@@ -476,6 +506,21 @@ function showToast(msg){
 
 const usesClaudeStorage = (typeof window.storage !== 'undefined');
 
+function migrateOldMatches(){
+  // datos viejos: una fila = un jugador + su propia colocacion (duplicaba Booyahs).
+  // los convertimos a 1 partida (game) por fila antigua, con 1 sola actuacion (performance).
+  if(data.matches && data.matches.length){
+    if(!data.games) data.games = [];
+    if(!data.performances) data.performances = [];
+    data.matches.forEach(m=>{
+      const gameId = uid();
+      data.games.push({ id: gameId, jornadaId: m.jornadaId || null, map: m.label, roomType: m.roomType, placement: m.placement, createdAt: Date.now() });
+      data.performances.push({ id: uid(), gameId, playerId: m.playerId, kills: m.kills||0, assists: m.assists||0, deaths: m.deaths||0, damage: m.damage||0 });
+    });
+    delete data.matches;
+  }
+}
+
 async function loadData(){
   try{
     if(usesClaudeStorage){
@@ -488,9 +533,13 @@ async function loadData(){
   }catch(e){ /* no data yet */ }
   if(!data.jornadas) data.jornadas = [];
   if(data.activeJornadaId === undefined) data.activeJornadaId = null;
+  if(!data.games) data.games = [];
+  if(!data.performances) data.performances = [];
+  migrateOldMatches();
   document.getElementById('squadNameInput').value = data.squadName || "CGC ESPORT";
   document.getElementById('tournamentInput').value = data.tournamentName || "Chiapas Gaming Cup";
   renderAll();
+  saveData();
 }
 
 async function saveData(){
@@ -608,7 +657,7 @@ function renderPlacementOptions(){
 
 function removePlayer(id){
   data.players = data.players.filter(p=>p.id!==id);
-  data.matches = data.matches.filter(m=>m.playerId!==id);
+  data.performances = data.performances.filter(p=>p.playerId!==id);
   saveData();
   renderAll();
 }
@@ -636,13 +685,14 @@ function setActiveJornada(id){
 function removeJornada(id){
   const j = data.jornadas.find(jr=>jr.id===id);
   if(!j) return;
-  const matchCount = data.matches.filter(m=>m.jornadaId===id).length;
-  const msg = matchCount>0
-    ? `Vas a borrar "${j.name}" y sus ${matchCount} partidas registradas (equipo e individuales). ¿Confirmas?`
+  const gamesToRemove = data.games.filter(g=>g.jornadaId===id).map(g=>g.id);
+  const msg = gamesToRemove.length>0
+    ? `Vas a borrar "${j.name}" y sus ${gamesToRemove.length} partidas registradas (equipo e individuales). ¿Confirmas?`
     : `¿Borrar la jornada "${j.name}"?`;
   if(!confirm(msg)) return;
   data.jornadas = data.jornadas.filter(jr=>jr.id!==id);
-  data.matches = data.matches.filter(m=>m.jornadaId!==id);
+  data.games = data.games.filter(g=>g.jornadaId!==id);
+  data.performances = data.performances.filter(p=>!gamesToRemove.includes(p.gameId));
   if(data.activeJornadaId === id) data.activeJornadaId = data.jornadas.length ? data.jornadas[data.jornadas.length-1].id : null;
   if(statsJornadaFilter === id) statsJornadaFilter = 'all';
   saveData();
@@ -657,7 +707,7 @@ function renderJornadas(){
     return;
   }
   grid.innerHTML = [...data.jornadas].reverse().map(j=>{
-    const count = data.matches.filter(m=>m.jornadaId===j.id).length;
+    const count = data.games.filter(g=>g.jornadaId===j.id).length;
     const isActive = j.id === data.activeJornadaId;
     return `<div class="j-card ${isActive?'is-active':''}">
       <div class="j-badge">${j.type==='3dias' ? '3 Días · 6 Salas' : 'Semanal'}</div>
@@ -705,43 +755,84 @@ function onStatsJornadaChange(){
   renderIndividualStats();
 }
 
-function addMatch(){
-  const jornadaId = document.getElementById('mJornada').value;
-  if(!jornadaId){ showToast('Crea o activa una jornada primero'); return; }
-  const playerId = document.getElementById('mPlayer').value;
-  if(!playerId){ showToast('Añade jugadores primero'); return; }
-  const label = document.getElementById('mLabel').value;
-  const kills = parseInt(document.getElementById('mKills').value)||0;
-  const assists = parseInt(document.getElementById('mAssists').value)||0;
-  const deaths = parseInt(document.getElementById('mDeaths').value)||0;
-  const damage = parseInt(document.getElementById('mDamage').value)||0;
-  const placement = document.getElementById('mPlacement').value;
-  const roomType = currentRoom;
-  data.matches.push({ id:uid(), jornadaId, playerId, label, kills, assists, deaths, damage, placement, roomType });
-  document.getElementById('mKills').value=0;
-  document.getElementById('mAssists').value=0;
-  document.getElementById('mDeaths').value=0;
-  document.getElementById('mDamage').value=0;
-  saveData();
-  renderAll();
-  showToast('Partida registrada');
+function getFilteredGames(jornadaId){
+  jornadaId = jornadaId || 'all';
+  return jornadaId === 'all' ? data.games : data.games.filter(g=>g.jornadaId===jornadaId);
 }
 
-function removeMatch(id){
-  data.matches = data.matches.filter(m=>m.id!==id);
+function renderPerfRows(){
+  const box = document.getElementById('perfRows');
+  if(data.players.length===0){
+    box.innerHTML = '<div class="empty">Añade jugadores en Roster antes de registrar una partida.</div>';
+    return;
+  }
+  box.innerHTML = data.players.map(p=>`
+    <div class="perf-row" id="perf-row-${p.id}">
+      <input type="checkbox" id="perf-chk-${p.id}" onchange="document.getElementById('perf-row-${p.id}').classList.toggle('checked', this.checked)">
+      <div>
+        <div class="pr-name">${p.name}</div>
+        <div class="pr-ign">${p.ign}</div>
+      </div>
+      <div><span class="pr-label">Kills</span><input type="number" min="0" value="0" id="perf-kills-${p.id}"></div>
+      <div><span class="pr-label">Asist.</span><input type="number" min="0" value="0" id="perf-assists-${p.id}"></div>
+      <div><span class="pr-label">Muertes</span><input type="number" min="0" value="0" id="perf-deaths-${p.id}"></div>
+      <div><span class="pr-label">Daño</span><input type="number" min="0" value="0" id="perf-damage-${p.id}"></div>
+    </div>`).join('');
+}
+
+function saveGame(){
+  const jornadaId = document.getElementById('mJornada').value;
+  if(!jornadaId){ showToast('Crea o activa una jornada primero'); return; }
+  if(data.players.length===0){ showToast('Añade jugadores primero'); return; }
+
+  const map = document.getElementById('mLabel').value;
+  const placement = document.getElementById('mPlacement').value;
+  const roomType = currentRoom;
+
+  const participants = data.players.filter(p=>document.getElementById(`perf-chk-${p.id}`).checked);
+  if(participants.length===0){ showToast('Marca al menos un jugador que haya participado'); return; }
+
+  const gameId = uid();
+  data.games.push({ id: gameId, jornadaId, map, roomType, placement, createdAt: Date.now() });
+
+  participants.forEach(p=>{
+    const kills = parseInt(document.getElementById(`perf-kills-${p.id}`).value)||0;
+    const assists = parseInt(document.getElementById(`perf-assists-${p.id}`).value)||0;
+    const deaths = parseInt(document.getElementById(`perf-deaths-${p.id}`).value)||0;
+    const damage = parseInt(document.getElementById(`perf-damage-${p.id}`).value)||0;
+    data.performances.push({ id: uid(), gameId, playerId: p.id, kills, assists, deaths, damage });
+  });
+
+  saveData();
+  renderAll();
+  renderPerfRows();
+  showToast(`Partida guardada con ${participants.length} jugador${participants.length===1?'':'es'}`);
+}
+
+function removeGame(id){
+  const g = data.games.find(gm=>gm.id===id);
+  if(!g) return;
+  if(!confirm(`¿Borrar esta partida completa (${g.map}) y las stats de todos los jugadores que participaron?`)) return;
+  data.games = data.games.filter(gm=>gm.id!==id);
+  data.performances = data.performances.filter(p=>p.gameId!==id);
+  saveData();
+  renderAll();
+}
+
+function removePerformance(id){
+  data.performances = data.performances.filter(p=>p.id!==id);
   saveData();
   renderAll();
 }
 
 function playerStats(playerId, jornadaId){
-  jornadaId = jornadaId || 'all';
-  let ms = data.matches.filter(m=>m.playerId===playerId);
-  if(jornadaId !== 'all') ms = ms.filter(m=>m.jornadaId===jornadaId);
-  const kills = ms.reduce((s,m)=>s+m.kills,0);
-  const assists = ms.reduce((s,m)=>s+m.assists,0);
-  const deaths = ms.reduce((s,m)=>s+m.deaths,0);
-  const damage = ms.reduce((s,m)=>s+m.damage,0);
-  const played = ms.length;
+  const gameIds = new Set(getFilteredGames(jornadaId).map(g=>g.id));
+  const perfs = data.performances.filter(p=>p.playerId===playerId && gameIds.has(p.gameId));
+  const kills = perfs.reduce((s,p)=>s+p.kills,0);
+  const assists = perfs.reduce((s,p)=>s+p.assists,0);
+  const deaths = perfs.reduce((s,p)=>s+p.deaths,0);
+  const damage = perfs.reduce((s,p)=>s+p.damage,0);
+  const played = perfs.length;
   const kda = deaths>0 ? ((kills+assists)/deaths) : (kills+assists);
   const avgDmg = played>0 ? Math.round(damage/played) : 0;
   return { kills, assists, deaths, damage, played, kda, avgDmg };
@@ -751,8 +842,8 @@ function renderAll(){
   renderRoster();
   renderJornadas();
   renderJornadaSelects();
-  renderMatchSelect();
-  renderMatchTable();
+  renderPerfRows();
+  renderGamesHistory();
   renderStats();
   renderStatsPlayerSelect();
   renderIndividualStats();
@@ -779,12 +870,16 @@ function renderIndividualStats(){
   }
   const p = data.players.find(pl=>pl.id===playerId);
   const s = playerStats(playerId, statsJornadaFilter);
-  let ms = data.matches.filter(m=>m.playerId===playerId);
-  if(statsJornadaFilter !== 'all') ms = ms.filter(m=>m.jornadaId===statsJornadaFilter);
+  const gameIds = new Set(getFilteredGames(statsJornadaFilter).map(g=>g.id));
+  const perfs = data.performances.filter(pf=>pf.playerId===playerId && gameIds.has(pf.gameId));
 
   const mapCounts = {};
   MAPS.forEach(m=>mapCounts[m]=0);
-  ms.forEach(m=>{ if(mapCounts[m.label] !== undefined) mapCounts[m.label]++; else mapCounts[m.label]=1; });
+  perfs.forEach(pf=>{
+    const g = data.games.find(gm=>gm.id===pf.gameId);
+    if(!g) return;
+    if(mapCounts[g.map] !== undefined) mapCounts[g.map]++; else mapCounts[g.map]=1;
+  });
 
   box.innerHTML = `
     <div class="ind-stats">
@@ -833,51 +928,60 @@ function renderRoster(){
   }).join('');
 }
 
-function renderMatchSelect(){
-  const sel = document.getElementById('mPlayer');
-  sel.innerHTML = data.players.length===0
-    ? '<option value="">— añade jugadores primero —</option>'
-    : data.players.map(p=>`<option value="${p.id}">${p.name} (${p.ign})</option>`).join('');
-}
-
-function renderMatchTable(){
-  const body = document.getElementById('matchTableBody');
-  if(data.matches.length===0){
-    body.innerHTML = '<tr><td colspan="10"><div class="empty">Sin partidas registradas.</div></td></tr>';
+function renderGamesHistory(){
+  const box = document.getElementById('gamesHistory');
+  if(data.games.length===0){
+    box.innerHTML = '<div class="empty">Sin partidas registradas.</div>';
     return;
   }
-  const sorted = [...data.matches].reverse();
-  body.innerHTML = sorted.map(m=>{
-    const p = data.players.find(pl=>pl.id===m.playerId);
-    const pname = p ? p.name : '(eliminado)';
-    const j = data.jornadas.find(jr=>jr.id===m.jornadaId);
+  const sorted = [...data.games].reverse();
+  box.innerHTML = sorted.map(g=>{
+    const j = data.jornadas.find(jr=>jr.id===g.jornadaId);
     const jname = j ? j.name : '—';
-    return `<tr>
-      <td class="mono">${jname}</td>
-      <td>${pname}</td>
-      <td class="mono">${m.label}</td>
-      <td class="mono">${m.roomType==='liga' ? 'Sala de Liga' : 'Scrim'}</td>
-      <td class="fire-txt mono">${m.kills}</td>
-      <td class="mono">${m.assists}</td>
-      <td class="danger-txt mono">${m.deaths}</td>
-      <td class="toxic-txt mono">${m.damage}</td>
-      <td><span class="placement-tag">${m.placement}</span></td>
-      <td><button class="btn ghost" onclick="removeMatch('${m.id}')">borrar</button></td>
-    </tr>`;
+    const isBooyah = /^Top 1(\s|$)/.test(g.placement);
+    const perfs = data.performances.filter(p=>p.gameId===g.id);
+    return `<div class="game-card ${isBooyah?'is-booyah':''}">
+      <div class="game-head">
+        <div class="game-tags">
+          <span class="game-tag map">${g.map}</span>
+          <span class="game-tag">${jname}</span>
+          <span class="game-tag">${g.roomType==='liga' ? 'Sala de Liga' : 'Scrim'}</span>
+          <span class="placement-tag">${g.placement}</span>
+        </div>
+        <button class="btn ghost" onclick="removeGame('${g.id}')">borrar partida</button>
+      </div>
+      <table class="game-perf-table">
+        <thead><tr><th>Jugador</th><th>Kills</th><th>Asist.</th><th>Muertes</th><th>Daño</th><th></th></tr></thead>
+        <tbody>
+          ${perfs.map(p=>{
+            const pl = data.players.find(pp=>pp.id===p.playerId);
+            const pname = pl ? pl.name : '(eliminado)';
+            return `<tr>
+              <td>${pname}</td>
+              <td class="fire-txt mono">${p.kills}</td>
+              <td class="mono">${p.assists}</td>
+              <td class="danger-txt mono">${p.deaths}</td>
+              <td class="toxic-txt mono">${p.damage}</td>
+              <td><button class="btn ghost" onclick="removePerformance('${p.id}')">quitar</button></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
   }).join('');
 }
 
 function renderStats(){
   // squad totals (respeta el filtro de jornada)
-  const filtered = statsJornadaFilter === 'all'
-    ? data.matches
-    : data.matches.filter(m=>m.jornadaId===statsJornadaFilter);
+  const filteredGames = getFilteredGames(statsJornadaFilter);
+  const filteredGameIds = new Set(filteredGames.map(g=>g.id));
+  const filteredPerfs = data.performances.filter(p=>filteredGameIds.has(p.gameId));
 
-  const totalKills = filtered.reduce((s,m)=>s+m.kills,0);
-  const totalDamage = filtered.reduce((s,m)=>s+m.damage,0);
-  const totalDeaths = filtered.reduce((s,m)=>s+m.deaths,0);
-  const totalMatches = filtered.length;
-  const booyahs = filtered.filter(m=>/^Top 1(\s|$)/.test(m.placement)).length;
+  const totalKills = filteredPerfs.reduce((s,p)=>s+p.kills,0);
+  const totalDamage = filteredPerfs.reduce((s,p)=>s+p.damage,0);
+  const totalDeaths = filteredPerfs.reduce((s,p)=>s+p.deaths,0);
+  const totalMatches = filteredGames.length;
+  const booyahs = filteredGames.filter(g=>/^Top 1(\s|$)/.test(g.placement)).length;
 
   document.getElementById('squadTotals').innerHTML = `
     <div class="cell"><div class="num">${totalMatches}</div><div class="lab">Partidas jugadas</div></div>
@@ -889,7 +993,7 @@ function renderStats(){
 
   const squadMapCounts = {};
   MAPS.forEach(m=>squadMapCounts[m]=0);
-  filtered.forEach(m=>{ if(squadMapCounts[m.label] !== undefined) squadMapCounts[m.label]++; else squadMapCounts[m.label]=1; });
+  filteredGames.forEach(g=>{ if(squadMapCounts[g.map] !== undefined) squadMapCounts[g.map]++; else squadMapCounts[g.map]=1; });
   document.getElementById('squadMapList').innerHTML = Object.entries(squadMapCounts).map(([map,count])=>`
     <div class="m-cell">
       <div class="m-name">${map}</div>
