@@ -433,11 +433,12 @@ tr:hover td{background:rgba(255,90,31,0.04);}
     <div class="form-card">
       <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px;">Tipo de sala</label>
       <div class="room-toggle" id="roomToggle">
-        <div class="rt active" data-room="scrim">Scrim (12 equipos)</div>
-        <div class="rt" data-room="liga">Sala de Liga (15 equipos)</div>
+        <div class="rt active" data-room="scrim">12 Equipos (Scrim)</div>
+        <div class="rt" data-room="liga">15 Equipos (Sala de Liga)</div>
       </div>
       <div class="form-grid">
         <div class="field"><label>Jornada</label><select id="mJornada"></select></div>
+        <div class="field"><label>Scrim / Bloque (opcional)</label><input id="mScrim" placeholder="Ej. Scrim 1"></div>
         <div class="field"><label>Mapa</label>
           <select id="mLabel">
             <option>Bermuda</option>
@@ -788,12 +789,13 @@ function saveGame(){
   const map = document.getElementById('mLabel').value;
   const placement = document.getElementById('mPlacement').value;
   const roomType = currentRoom;
+  const scrimLabel = document.getElementById('mScrim').value.trim();
 
   const participants = data.players.filter(p=>document.getElementById(`perf-chk-${p.id}`).checked);
   if(participants.length===0){ showToast('Marca al menos un jugador que haya participado'); return; }
 
   const gameId = uid();
-  data.games.push({ id: gameId, jornadaId, map, roomType, placement, createdAt: Date.now() });
+  data.games.push({ id: gameId, jornadaId, map, roomType, placement, scrimLabel, createdAt: Date.now() });
 
   participants.forEach(p=>{
     const kills = parseInt(document.getElementById(`perf-kills-${p.id}`).value)||0;
@@ -945,7 +947,8 @@ function renderGamesHistory(){
         <div class="game-tags">
           <span class="game-tag map">${g.map}</span>
           <span class="game-tag">${jname}</span>
-          <span class="game-tag">${g.roomType==='liga' ? 'Sala de Liga' : 'Scrim'}</span>
+          ${g.scrimLabel ? `<span class="game-tag">${g.scrimLabel}</span>` : ''}
+          <span class="game-tag">${g.roomType==='liga' ? '15 Equipos' : '12 Equipos'}</span>
           <span class="placement-tag">${g.placement}</span>
         </div>
         <button class="btn ghost" onclick="removeGame('${g.id}')">borrar partida</button>
