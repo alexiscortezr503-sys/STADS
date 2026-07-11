@@ -601,7 +601,7 @@ function renderPlacementOptions(){
   const max = currentRoom === 'liga' ? 15 : 12;
   let opts = '';
   for(let i=1;i<=max;i++){
-    opts += `<option value="Top ${i}">Top ${i}${i===1?' — Booyah 🔥':''}</option>`;
+    opts += `<option value="Top ${i}${i===1?' — Booyah 🔥':''}">Top ${i}${i===1?' — Booyah 🔥':''}</option>`;
   }
   sel.innerHTML = opts;
 }
@@ -877,7 +877,7 @@ function renderStats(){
   const totalDamage = filtered.reduce((s,m)=>s+m.damage,0);
   const totalDeaths = filtered.reduce((s,m)=>s+m.deaths,0);
   const totalMatches = filtered.length;
-  const booyahs = filtered.filter(m=>m.placement.includes('Booyah')).length;
+  const booyahs = filtered.filter(m=>/^Top 1(\s|$)/.test(m.placement)).length;
 
   document.getElementById('squadTotals').innerHTML = `
     <div class="cell"><div class="num">${totalMatches}</div><div class="lab">Partidas jugadas</div></div>
