@@ -657,6 +657,7 @@ document.querySelectorAll('.ts-btn').forEach(btn=>{
     statsJornadaFilter = 'all';
     saveData();
     applyTitleContext();
+    renderPlacementOptions();
     renderAll();
   });
 });
@@ -864,12 +865,17 @@ document.querySelectorAll('#roomToggle .rt').forEach(btn=>{
   });
 });
 
+function winLabel(){
+  return data.activeTitle === 'bloodstrike' ? 'Victoria' : 'Booyah';
+}
+
 function renderPlacementOptions(){
   const sel = document.getElementById('mPlacement');
   const max = currentRoom === 'liga' ? 15 : 12;
+  const win = winLabel();
   let opts = '';
   for(let i=1;i<=max;i++){
-    opts += `<option value="Top ${i}${i===1?' — Booyah 🔥':''}">Top ${i}${i===1?' — Booyah 🔥':''}</option>`;
+    opts += `<option value="Top ${i}${i===1?' — '+win+' 🔥':''}">Top ${i}${i===1?' — '+win+' 🔥':''}</option>`;
   }
   sel.innerHTML = opts;
 }
@@ -1138,7 +1144,7 @@ function renderStats(){
     <div class="cell"><div class="num">${totalKills}</div><div class="lab">Kills totales</div></div>
     <div class="cell"><div class="num">${totalDamage.toLocaleString()}</div><div class="lab">Daño total</div></div>
     <div class="cell"><div class="num">${totalDeaths}</div><div class="lab">Muertes totales</div></div>
-    <div class="cell"><div class="num">${booyahs}</div><div class="lab">Booyahs 🔥</div></div>
+    <div class="cell"><div class="num">${booyahs}</div><div class="lab">${winLabel()}s 🔥</div></div>
   `;
 
   const maps = GAME_CONFIGS[data.activeTitle].maps;
