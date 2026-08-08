@@ -586,6 +586,15 @@ function migrateLegacyData(){
   if(!data.titles.bloodstrike) data.titles.bloodstrike = emptyTitleData();
   if(!data.titles.freefire) data.titles.freefire = emptyTitleData();
   if(!data.activeTitle) data.activeTitle = 'freefire';
+
+  // normaliza jugadores viejos que tenian "role" (string) en vez de "roles" (array)
+  Object.values(data.titles).forEach(t=>{
+    if(!t.players) return;
+    t.players.forEach(p=>{
+      if(!p.roles){ p.roles = p.role ? [p.role] : []; }
+      delete p.role;
+    });
+  });
 }
 
 async function loadData(){
@@ -704,7 +713,7 @@ function editPlayer(id){
   document.getElementById('pName').value = p.name;
   document.getElementById('pIgn').value = p.ign === '—' ? '' : p.ign;
   document.querySelectorAll('#pRoleGroup input[type=checkbox]').forEach(c=>{
-    c.checked = p.roles.includes(c.value);
+    c.checked = (p.roles || (p.role ? [p.role] : [])).includes(c.value);
   });
   document.getElementById('playerFormBtn').textContent = '✓ Guardar cambios';
   document.getElementById('cancelEditBtn').style.display = 'inline-block';
@@ -750,7 +759,7 @@ function renderRoster(){
       </div>
       <div class="p-name">${p.name}</div>
       <div class="p-ign">${p.ign}</div>
-      <div class="role-tag">${p.roles.join(' / ')}</div>
+      <div class="role-tag">${(p.roles || (p.role ? [p.role] : [])).join(' / ')}</div>
       <div class="stat-row"><span>Partidas</span><b>${s.played}</b></div>
       <div class="stat-row"><span>Kills totales</span><b>${s.kills}</b></div>
       <div class="stat-row"><span>Daño promedio</span><b>${s.avgDmg}</b></div>
